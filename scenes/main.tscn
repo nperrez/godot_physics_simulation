@@ -1,13 +1,13 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene format=3 uid="uid://cbmrbiyx0p60m"]
 
-[ext_resource type="Script" path="res://scripts/sandbox.gd" id="1_sandbox"]
+[ext_resource type="Script" uid="uid://bwlrbbhoxhc7k" path="res://scripts/sandbox.gd" id="1_sandbox"]
 
-[node name="Main" type="Node2D"]
+[node name="Main" type="Node2D" unique_id=695956107]
 script = ExtResource("1_sandbox")
 
-[node name="UI" type="CanvasLayer" parent="."]
+[node name="UI" type="CanvasLayer" parent="." unique_id=469629384]
 
-[node name="HelpLabel" type="Label" parent="UI"]
+[node name="HelpLabel" type="Label" parent="UI" unique_id=782608096]
 offset_left = 16.0
 offset_top = 16.0
 offset_right = 416.0

@@ -1,9 +1,4 @@
 extends Node2D
-## The sandbox: handles user input (placing bodies) and draws the simulation.
-##
-## This script deliberately contains NO physics. It owns a PhysWorld and asks it
-## to step forward every physics tick. Godot's built-in physics engine is not used.
-##
 ## Input actions (defined in Project Settings -> Input Map):
 ##   place_dynamic  - Left mouse   : place a dynamic body
 ##   place_static   - Right mouse  : place a static body
@@ -12,22 +7,48 @@ extends Node2D
 ##   pause          - Space        : pause / resume
 ##   clear          - C            : remove all bodies
 
+var bodies: Array[PhysBody]
+var shape = PhysBody.ShapeType.CIRCLE
+var paused = false
 
 func _ready() -> void:
-	# Milestone 1: create the world and a static floor here.
-	pass
+	var screen_size := get_viewport_rect().size;
+	var floor_height := 40.0;
+	var floor_pos := Vector2(screen_size.x / 2, screen_size.y - floor_height / 2);
+	bodies.append(PhysBody.create_box(floor_pos, screen_size.x, floor_height, true));
 
 
 func _physics_process(_delta: float) -> void:
-	# Milestone 2: step the world here (unless paused), then queue_redraw().
-	pass
+	queue_redraw();
 
 
 func _unhandled_input(_event: InputEvent) -> void:
-	# Milestone 1: react to the input actions listed above.
-	pass
+	if _event.is_action_pressed("shape_box"):
+		shape = PhysBody.ShapeType.BOX;
+	elif _event.is_action_pressed("shape_circle"):
+		shape = PhysBody.ShapeType.CIRCLE;
+	elif _event.is_action_pressed("place_static"):
+		var pos = get_global_mouse_position();
+		if shape == PhysBody.ShapeType.CIRCLE:
+			bodies.append(PhysBody.create_circle(pos, 100, true));
+		else:
+			bodies.append(PhysBody.create_box(pos, 100, 100, true));
+	elif _event.is_action_pressed("place_dynamic"):
+		var pos = get_global_mouse_position();
+		if shape == PhysBody.ShapeType.CIRCLE:
+			bodies.append(PhysBody.create_circle(pos, 100, false));
+		else:
+			bodies.append(PhysBody.create_box(pos, 100, 100, false));
+	elif _event.is_action_pressed("clear"):
+		bodies.clear();
+		_ready();
 
 
 func _draw() -> void:
-	# Milestone 1: draw every body here.
-	pass
+	for body in bodies:
+		if body.shape_type == PhysBody.ShapeType.CIRCLE:
+			draw_circle(body.position, body.radius, body.color, true);
+			draw_circle(body.position, body.radius, Color.BLACK, false, 2, true);
+		if body.shape_type == PhysBody.ShapeType.BOX:
+			draw_colored_polygon(body.world_vertices, body.color);
+			draw_polyline(body.world_vertices, Color.BLACK, 2, true);
