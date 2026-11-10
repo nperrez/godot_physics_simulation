@@ -7,18 +7,21 @@ extends Node2D
 ##   pause          - Space        : pause / resume
 ##   clear          - C            : remove all bodies
 
-var bodies: Array[PhysBody]
 var shape = PhysBody.ShapeType.CIRCLE
 var paused = false
+static var world = PhysWorld.new()
 
 func _ready() -> void:
 	var screen_size := get_viewport_rect().size;
 	var floor_height := 40.0;
 	var floor_pos := Vector2(screen_size.x / 2, screen_size.y - floor_height / 2);
-	bodies.append(PhysBody.create_box(floor_pos, screen_size.x, floor_height, true));
+	world.bodies.append(PhysBody.create_box(floor_pos, screen_size.x, floor_height, true));
+	world.bottom_y = screen_size.y + 200;
 
 
 func _physics_process(_delta: float) -> void:
+	if !paused:
+		world.step(_delta)
 	queue_redraw();
 
 
@@ -30,25 +33,32 @@ func _unhandled_input(_event: InputEvent) -> void:
 	elif _event.is_action_pressed("place_static"):
 		var pos = get_global_mouse_position();
 		if shape == PhysBody.ShapeType.CIRCLE:
-			bodies.append(PhysBody.create_circle(pos, 100, true));
+			world.bodies.append(PhysBody.create_circle(pos, 100, true));
 		else:
-			bodies.append(PhysBody.create_box(pos, 100, 100, true));
+			world.bodies.append(PhysBody.create_box(pos, 100, 100, true));
 	elif _event.is_action_pressed("place_dynamic"):
 		var pos = get_global_mouse_position();
 		if shape == PhysBody.ShapeType.CIRCLE:
-			bodies.append(PhysBody.create_circle(pos, 100, false));
+			world.bodies.append(PhysBody.create_circle(pos, 100, false));
 		else:
-			bodies.append(PhysBody.create_box(pos, 100, 100, false));
+			world.bodies.append(PhysBody.create_box(pos, 100, 100, false));
 	elif _event.is_action_pressed("clear"):
-		bodies.clear();
+		world.bodies.clear();
 		_ready();
+	elif _event.is_action_pressed("pause"):
+		if paused:
+			paused = false;
+		else:
+			paused = true;
 
 
 func _draw() -> void:
-	for body in bodies:
+	for body in world.bodies:
 		if body.shape_type == PhysBody.ShapeType.CIRCLE:
 			draw_circle(body.position, body.radius, body.color, true);
 			draw_circle(body.position, body.radius, Color.BLACK, false, 2, true);
 		if body.shape_type == PhysBody.ShapeType.BOX:
 			draw_colored_polygon(body.world_vertices, body.color);
-			draw_polyline(body.world_vertices, Color.BLACK, 2, true);
+			var outline: PackedVector2Array = body.world_vertices.duplicate();
+			outline.append(outline[0]);
+			draw_polyline(outline, Color.BLACK, 2, true);
