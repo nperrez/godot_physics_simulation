@@ -34,7 +34,7 @@ var inertia: float = 0.0
 var inv_inertia: float = 0.0
 
 # bounciness
-var restitution: float = 0.6
+var restitution: float = 0.5
 
 var friction: float = 0.5
 

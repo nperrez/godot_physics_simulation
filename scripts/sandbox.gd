@@ -10,6 +10,7 @@ extends Node2D
 var shape = PhysBody.ShapeType.CIRCLE
 var paused = false
 static var world = PhysWorld.new()
+var rot = 0;
 
 func _ready() -> void:
 	var screen_size := get_viewport_rect().size;
@@ -35,13 +36,19 @@ func _unhandled_input(_event: InputEvent) -> void:
 		if shape == PhysBody.ShapeType.CIRCLE:
 			world.bodies.append(PhysBody.create_circle(pos, 50, true));
 		else:
-			world.bodies.append(PhysBody.create_box(pos, 50, 50, true));
+			var box = PhysBody.create_box(pos, 50, 50, true);
+			box.rotation = rot;
+			box.update_shape();
+			world.bodies.append(box);
 	elif _event.is_action_pressed("place_dynamic"):
 		var pos = get_global_mouse_position();
 		if shape == PhysBody.ShapeType.CIRCLE:
 			world.bodies.append(PhysBody.create_circle(pos, 50, false));
 		else:
-			world.bodies.append(PhysBody.create_box(pos, 50, 50, false));
+			var box = PhysBody.create_box(pos, 50, 50, false);
+			box.rotation = rot;
+			box.update_shape();
+			world.bodies.append(box);
 	elif _event.is_action_pressed("clear"):
 		world.bodies.clear();
 		_ready();
@@ -50,6 +57,8 @@ func _unhandled_input(_event: InputEvent) -> void:
 			paused = false;
 		else:
 			paused = true;
+	elif _event.is_action_pressed("rotate_placement"):
+		rot += PI / 12;
 
 
 func _draw() -> void:
