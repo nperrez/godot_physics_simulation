@@ -7,17 +7,18 @@ extends Node2D
 ##   pause          - Space        : pause / resume
 ##   clear          - C            : remove all bodies
 
+@onready var help_label: Label = $UI/HelpLabel
+var base_text := ""
+
 var shape = PhysBody.ShapeType.CIRCLE
 var paused = false
 static var world = PhysWorld.new()
 var rot = 0;
 
 func _ready() -> void:
-	var screen_size := get_viewport_rect().size;
-	var floor_height := 40.0;
-	var floor_pos := Vector2(screen_size.x / 2, screen_size.y - floor_height / 2);
-	world.bodies.append(PhysBody.create_box(floor_pos, screen_size.x, floor_height, true));
-	world.bottom_y = screen_size.y + 200;
+	create_floor();
+	base_text = help_label.text;
+	_update_label();
 
 
 func _physics_process(_delta: float) -> void:
@@ -38,6 +39,8 @@ func _unhandled_input(_event: InputEvent) -> void:
 		else:
 			var box = PhysBody.create_box(pos, 50, 50, true);
 			box.rotation = rot;
+			rot = wrapf(rot, 0, TAU);
+			_update_label();
 			box.update_shape();
 			world.bodies.append(box);
 	elif _event.is_action_pressed("place_dynamic"):
@@ -47,11 +50,13 @@ func _unhandled_input(_event: InputEvent) -> void:
 		else:
 			var box = PhysBody.create_box(pos, 50, 50, false);
 			box.rotation = rot;
+			rot = wrapf(rot, 0, TAU);
+			_update_label();
 			box.update_shape();
 			world.bodies.append(box);
 	elif _event.is_action_pressed("clear"):
 		world.bodies.clear();
-		_ready();
+		create_floor();
 	elif _event.is_action_pressed("pause"):
 		if paused:
 			paused = false;
@@ -75,3 +80,13 @@ func _draw() -> void:
 		for contact in manifold.contacts:
 			draw_circle(contact, 4, Color.YELLOW);
 			draw_line(contact, contact + manifold.normal * 30, Color.GREEN, 2);
+
+func create_floor() -> void:
+	var screen_size := get_viewport_rect().size;
+	var floor_height := 40.0;
+	var floor_pos := Vector2(screen_size.x / 2, screen_size.y - floor_height / 2);
+	world.bodies.append(PhysBody.create_box(floor_pos, screen_size.x, floor_height, true));
+	world.bottom_y = screen_size.y + 200;
+	
+func _update_label() -> void:
+	help_label.text = base_text + "\nRotation: %d" % roundi(rad_to_deg(rot))
