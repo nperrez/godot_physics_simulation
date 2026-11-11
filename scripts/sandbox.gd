@@ -33,15 +33,15 @@ func _unhandled_input(_event: InputEvent) -> void:
 	elif _event.is_action_pressed("place_static"):
 		var pos = get_global_mouse_position();
 		if shape == PhysBody.ShapeType.CIRCLE:
-			world.bodies.append(PhysBody.create_circle(pos, 100, true));
+			world.bodies.append(PhysBody.create_circle(pos, 50, true));
 		else:
-			world.bodies.append(PhysBody.create_box(pos, 100, 100, true));
+			world.bodies.append(PhysBody.create_box(pos, 50, 50, true));
 	elif _event.is_action_pressed("place_dynamic"):
 		var pos = get_global_mouse_position();
 		if shape == PhysBody.ShapeType.CIRCLE:
-			world.bodies.append(PhysBody.create_circle(pos, 100, false));
+			world.bodies.append(PhysBody.create_circle(pos, 50, false));
 		else:
-			world.bodies.append(PhysBody.create_box(pos, 100, 100, false));
+			world.bodies.append(PhysBody.create_box(pos, 50, 50, false));
 	elif _event.is_action_pressed("clear"):
 		world.bodies.clear();
 		_ready();
@@ -62,3 +62,7 @@ func _draw() -> void:
 			var outline: PackedVector2Array = body.world_vertices.duplicate();
 			outline.append(outline[0]);
 			draw_polyline(outline, Color.BLACK, 2, true);
+	for manifold in world.debug_manifolds:
+		for contact in manifold.contacts:
+			draw_circle(contact, 4, Color.YELLOW);
+			draw_line(contact, contact + manifold.normal * 30, Color.GREEN, 2);
